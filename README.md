@@ -13,6 +13,17 @@ Aplicación web para Pablo y Patricia. Permite marcar turnos, registrar horas pa
 4. Seleccioná la rama `main` y la carpeta `/(root)`, y guardá.
 5. La dirección será `https://pablocerrutti.github.io/Registro-Horas-Mevir-3/` cuando finalice la publicación.
 
+## Instalar en el celular (Android y iPhone)
+
+La aplicación incluye un manifiesto PWA y un service worker. Primero debe estar publicada por HTTPS en GitHub Pages:
+`https://pablocerrutti.github.io/Registro-Horas-Mevir-3/`
+
+- **Android (Chrome):** abrí la dirección en Chrome, tocá el menú ⋮ y elegí **Instalar aplicación** o **Agregar a pantalla principal**. Confirmá la instalación.
+- **iPhone/iPad (Safari):** abrí la dirección en Safari, tocá **Compartir** y elegí **Agregar a pantalla de inicio**.
+- Abrí Nuestra Casa desde el icono instalado. La conexión con Google Sheets sigue siendo necesaria para sincronizar registros entre los dos celulares.
+
+El service worker permite abrir la estructura de la aplicación si se pierde temporalmente la conexión, pero **no guarda ni sincroniza cambios de horas sin conexión**. Los registros deben guardarse en Google Sheets; el caché no sustituye a la planilla.
+
 ## Conectar Google Sheets
 1. Creá una planilla nueva en https://sheets.google.com/.
 2. En la planilla, abrí Extensiones > Apps Script.
