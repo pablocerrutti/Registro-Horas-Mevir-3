@@ -1,41 +1,44 @@
 # Nuestra Casa - Registro de horas MEVIR 3
 
-Aplicación web para Pablo y Patricia. Permite marcar turnos, registrar horas parciales, corregir registros y consultar totales semanales, mensuales y la deuda conjunta.
+Aplicación web para registrar y corregir las horas de Pablo y Patricia, con Google Sheets como fuente permanente de datos.
 
 ## Archivos
 - `index.html`: aplicación web.
-- `Code.gs`: backend de Google Apps Script para guardar los registros en Google Sheets.
+- `Code.gs`: API de Google Apps Script.
+- `sw.js`: caché de la aplicación; se versiona para que los celulares reciban las actualizaciones.
+
+## Datos permanentes y hoja de cálculo
+El backend utiliza una hoja llamada `RegistroHoras` como base de datos y `Configuracion` para los parámetros de la meta/deuda. Si la hoja nueva se crea dentro de una planilla que ya tenía `Registros`, intenta migrar automáticamente los registros válidos a `RegistroHoras`. La hoja antigua no se borra.
+
+El backend ya no vacía toda la base al guardar una corrección individual: usa acciones separadas para guardar una jornada, guardar un registro o eliminar un registro. Una jornada guardada muestra únicamente los turnos que fueron marcados y queda bloqueada en el calendario; las correcciones se realizan desde el formulario inferior.
+
+### Activar la versión actualizada de Google Sheets
+Los cambios de GitHub no actualizan por sí solos la implementación de Apps Script. Hay que hacer esto una vez:
+
+1. Abrí el proyecto de Apps Script asociado a la URL que usa la app.
+2. Reemplazá todo el contenido de su archivo `Code.gs` por la versión de este repositorio y guardá.
+3. Abrí **Implementar → Administrar implementaciones**.
+4. Editá la implementación de tipo **Aplicación web**, seleccioná **Nueva versión** y volvé a implementar. Mantené la URL /exec existente.
+5. Abrí la aplicación. El servicio creará la hoja `RegistroHoras` y `Configuracion` si faltan, e intentará migrar los registros de la hoja anterior `Registros`.
+6. En el panel **Conectar planilla** la app mostrará el enlace **Abrir Google Sheets** después de una lectura exitosa.
+
+Si Apps Script fue creado como proyecto independiente y no está vinculado a una planilla, el código crea una nueva planilla llamada **Nuestra Casa - Registro de horas MEVIR 3** y guarda su ID en las propiedades del proyecto para seguir usando siempre la misma base.
 
 ## Publicar con GitHub Pages
-1. Abrí Settings en el repositorio.
-2. Entrá en Pages.
-3. En Build and deployment elegí Deploy from a branch.
-4. Seleccioná la rama `main` y la carpeta `/(root)`, y guardá.
-5. La dirección será `https://pablocerrutti.github.io/Registro-Horas-Mevir-3/` cuando finalice la publicación.
+En GitHub, abrí **Settings → Pages**, elegí **Deploy from a branch**, seleccioná la rama `main` y la carpeta `/(root)`. La dirección de la app es:
+https://pablocerrutti.github.io/Registro-Horas-Mevir-3/
 
-## Instalar en el celular (Android y iPhone)
+## Instalar en el celular
+- **Android:** abrir en Chrome y elegir **Instalar aplicación** o **Agregar a pantalla principal**.
+- **iPhone:** abrir en Safari, tocar **Compartir** y elegir **Agregar a pantalla de inicio**.
 
-La aplicación incluye un manifiesto PWA y un service worker. Primero debe estar publicada por HTTPS en GitHub Pages:
-`https://pablocerrutti.github.io/Registro-Horas-Mevir-3/`
+El caché permite abrir la estructura de la app temporalmente, pero no sustituye a Google Sheets. Los datos y los contadores se reconstruyen a partir de los registros leídos desde la planilla al abrir la app.
 
-- **Android (Chrome):** abrí la dirección en Chrome, tocá el menú ⋮ y elegí **Instalar aplicación** o **Agregar a pantalla principal**. Confirmá la instalación.
-- **iPhone/iPad (Safari):** abrí la dirección en Safari, tocá **Compartir** y elegí **Agregar a pantalla de inicio**.
-- Abrí Nuestra Casa desde el icono instalado. La conexión con Google Sheets sigue siendo necesaria para sincronizar registros entre los dos celulares.
+## Horarios y metas
+- Lunes a jueves: mañana 07:00–11:30 (4,5 h) y tarde 13:00–17:30 (4,5 h).
+- Viernes: mañana 07:00–11:00 (4 h) y tarde 13:00–16:00 (3 h).
+- Total previsto: 43 h semanales por persona (86 h entre ambos).
+- Meta mensual compartida: 80 h.
+- Deuda inicial compartida: 122 h; solo el excedente por encima de 80 h de cada mes descuenta la deuda.
 
-El service worker permite abrir la estructura de la aplicación si se pierde temporalmente la conexión, pero **no guarda ni sincroniza cambios de horas sin conexión**. Los registros deben guardarse en Google Sheets; el caché no sustituye a la planilla.
-
-## Conectar Google Sheets
-1. Creá una planilla nueva en https://sheets.google.com/.
-2. En la planilla, abrí Extensiones > Apps Script.
-3. Pegá el contenido de `Code.gs` de este repositorio y guardá.
-4. Elegí Implementar > Nueva implementación > Aplicación web.
-5. Configurá ejecutar como tu cuenta y acceso para cualquier persona; implementá y autorizá.
-6. Copiá la URL terminada en `/exec`.
-7. En la aplicación, pulsá Conectar planilla, pegá la URL y conectá.
-
-Se crearán automáticamente las hojas `Registros` y `Configuracion`. Sin configurar Google Sheets, la app avisa que los cambios no están guardados permanentemente.
-
-## Horarios
-Lunes a jueves: mañana 07:00–11:30 (4,5 h) y tarde 13:00–17:30 (4,5 h). Viernes: mañana 07:00–11:00 (4 h) y tarde 13:00–16:00 (3 h). Total previsto: 43 h semanales por persona (86 h entre ambos si cumplen todos los turnos). Meta mensual compartida: 80 h. Deuda inicial compartida: 122 h; solo se descuenta de la deuda el excedente acumulado por encima de las 80 h trabajadas en cada mes.
-
-Importante: el endpoint publicado permite leer y modificar la hoja asociada; compartí la aplicación solo con personas de confianza.
+Importante: compartí la app y la planilla solo con personas de confianza.
