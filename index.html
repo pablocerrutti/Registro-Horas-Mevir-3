@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#477b67"><title>Nuestra Casa · Registro de horas</title>
+<meta name="theme-color" content="#477b67"><meta name="description" content="Registro compartido de horas trabajadas para Nuestra Casa, MEVIR 3."><meta name="application-name" content="Nuestra Casa"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Nuestra Casa"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon.svg"><title>Nuestra Casa · Registro de horas</title>
 <style>
 :root{--green:#477b67;--deep:#294d40;--cream:#fffaf0;--ink:#273a32;--muted:#718078;--line:#e4e9e2;--pablo:#dceaff;--patricia:#ffe5ed;--gold:#f3c969;--white:#fff}
 *{box-sizing:border-box}body{margin:0;background:#f5f7f2;color:var(--ink);font:16px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:13px;padding:11px 14px;font-weight:750}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #e9b84d;outline-offset:2px}
@@ -75,6 +75,7 @@ async function persist(){if(!apiUrl){setStatus(false,'Sin planilla: los cambios 
 $('apiUrl').value=DEFAULT_API_URL;
 $('connectBtn').onclick=async()=>{let url=$('apiUrl').value.trim();if(!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(url)){ $('connectMsg').textContent='Pegá la URL completa de la aplicación web que termina en /exec.';return}apiUrl=url;records=[];$('connectMsg').textContent='Probando conexión…';try{let r=await fetch(apiUrl+'?action=ping&v='+Date.now());let j=await r.json();if(!j.ok)throw Error('Respuesta no válida');$('connectMsg').textContent='Conexión correcta. Cargando registros…';await loadRemote();$('settingsPanel').classList.add('hidden')}catch(e){apiUrl='';$('connectMsg').textContent='No se pudo conectar: '+e.message+'. Verificá que la implementación esté habilitada para cualquier persona.';setStatus(false,'Planilla no conectada')}};
 clearForm();render();setStatus(false,'Conectando con Google Sheets…');loadRemote();
+if("serviceWorker" in navigator && location.protocol==="https:"){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("No se pudo activar el modo instalable:",err)));}
 })();
 </script>
 </body></html>
