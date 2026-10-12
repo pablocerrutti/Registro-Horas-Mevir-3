@@ -28,7 +28,7 @@
 (function(){
 const $=id=>document.getElementById(id);
 const people=['Pablo','Patricia'];
-const durations=d=>d===4?{Mañana:4.5,Tarde:4.5}:{Mañana:4,Tarde:3};
+const durations=d=>d===5?{Mañana:4,Tarde:3}:{Mañana:4.5,Tarde:4.5};
 const DEFAULT_API_URL='https://script.google.com/macros/s/AKfycbyQTcYiD06pxsf2M9PkTc2mHMGXQhUTEYnTDOc-8jKTf7LmXS06o2TO7LgF1XlqjLnQKw/exec';
 let records=[], apiUrl=DEFAULT_API_URL, weekStart=monday(new Date()), editing=null, busy=false;
 function dateISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
@@ -37,7 +37,7 @@ function monday(d){let x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.se
 function addDays(d,n){let x=new Date(d);x.setDate(x.getDate()+n);return x}
 function fmt(d,opts){return d.toLocaleDateString('es-UY',opts||{day:'2-digit',month:'short'})}
 function weekDates(){return Array.from({length:5},(_,i)=>addDays(weekStart,i))}
-function weekday(s){return parseDate(s).getDay()===5?4:3}
+function weekday(s){return parseDate(s).getDay()}
 function expected(s,turn){return durations(weekday(s))[turn]}
 function record(s,p,t){return records.find(r=>r.fecha===s&&r.persona===p&&r.turno===t)}
 function sum(fn){return records.reduce((a,r)=>a+(fn(r)?Number(r.horas)||0:0),0)}
@@ -55,7 +55,7 @@ function upsert(r){let i=records.findIndex(x=>x.fecha===r.fecha&&x.persona===r.p
 function card(label,value,sub,percent,gold){return '<div class="stat"><div class="label">'+label+'</div><div class="value">'+value+'</div><small>'+sub+'</small>'+(percent===null?'':'<div class="progress '+(gold?'gold':'')+'"><span style="width:'+Math.max(0,Math.min(100,percent))+'%"></span></div>')+'</div>'}
 function renderStats(){
  let w=weekDates().map(dateISO),m=dateISO(new Date()).slice(0,7),month=sum(r=>r.fecha.startsWith(m)),weekP=sum(r=>w.includes(r.fecha)&&r.persona==='Pablo'),weekT=sum(r=>w.includes(r.fecha)&&r.persona==='Patricia'),week=weekP+weekT;
- $('weeklyStats').innerHTML=card('Pablo',weekP.toLocaleString('es-UY')+' h','esta semana',null)+card('Patricia',weekT.toLocaleString('es-UY')+' h','esta semana',null)+card('Entre los dos',week.toLocaleString('es-UY')+' h','máximo previsto: 86 h',null);
+ $('weeklyStats').innerHTML=card('Pablo',weekP.toLocaleString('es-UY')+' h','esta semana',null)+card('Patricia',weekT.toLocaleString('es-UY')+' h','esta semana',null)+card('Entre los dos',week.toLocaleString('es-UY')+' h','máximo previsto: 86 h entre los dos',null);
  $('monthlyStats').innerHTML=card('Horas del mes',month.toLocaleString('es-UY')+' h','Pablo + Patricia',Math.min(100,month/80*100))+card('Meta conjunta','80 h','objetivo mensual',null)+card('Restan',Math.max(0,80-month).toLocaleString('es-UY')+' h',month>=80?'¡Meta alcanzada!':'para llegar a la meta',Math.min(100,month/80*100));
  let monthlyTotals={};records.forEach(r=>{let key=String(r.fecha||'').slice(0,7);if(key)monthlyTotals[key]=(monthlyTotals[key]||0)+(Number(r.horas)||0)});let extra=Object.values(monthlyTotals).reduce((a,h)=>a+Math.max(0,h-80),0);let credited=Math.min(122,extra),debt=Math.max(0,122-credited);$('debtStats').innerHTML=card('Horas sobre la meta',extra.toLocaleString('es-UY')+' h','excedente acumulado de meses con más de 80 h',Math.min(100,credited/122*100),true)+card('Deuda restante',debt.toLocaleString('es-UY')+' h','de las 122 h iniciales',Math.min(100,credited/122*100),true)+card('Deuda cubierta',credited.toLocaleString('es-UY')+' h',credited>=122?'¡Deuda cubierta!':'solo cuenta el excedente mensual',Math.min(100,credited/122*100),true)
 }
