@@ -36,6 +36,6 @@ El service worker permite abrir la estructura de la aplicación si se pierde tem
 Se crearán automáticamente las hojas `Registros` y `Configuracion`. Sin configurar Google Sheets, la app avisa que los cambios no están guardados permanentemente.
 
 ## Horarios
-Lunes a jueves: mañana 07:00–11:30 (4,5 h) y tarde 13:00–17:30 (4,5 h). Viernes: mañana 07:00–11:00 (4 h) y tarde 13:00–16:00 (3 h). Meta mensual compartida: 80 h. Deuda inicial compartida: 122 h; solo se descuenta de la deuda el excedente acumulado por encima de las 80 h trabajadas en cada mes.
+Lunes a jueves: mañana 07:00–11:30 (4,5 h) y tarde 13:00–17:30 (4,5 h). Viernes: mañana 07:00–11:00 (4 h) y tarde 13:00–16:00 (3 h). Total previsto: 43 h semanales por persona (86 h entre ambos si cumplen todos los turnos). Meta mensual compartida: 80 h. Deuda inicial compartida: 122 h; solo se descuenta de la deuda el excedente acumulado por encima de las 80 h trabajadas en cada mes.
 
 Importante: el endpoint publicado permite leer y modificar la hoja asociada; compartí la aplicación solo con personas de confianza.
