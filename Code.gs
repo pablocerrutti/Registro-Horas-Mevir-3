@@ -7,10 +7,10 @@ function doGet(e) {
   if (action === 'ping') return json_({ok:true, message:'Nuestra Casa conectado'});
   const rows = ss.getSheetByName(SHEET_NAME).getDataRange().getValues();
   const data = rows.slice(1).filter(r => r[0]).map(r => ({
-    id:String(r[0]), fecha:String(r[1]), persona:String(r[2]), turno:String(r[3]),
-    horas:Number(r[4]) || 0, nota:String(r[5] || ''), actualizado:String(r[6] || '')
-  }));
-  return json_({ok:true, data});
+    id:String(r[0]), fecha:normalizeDate_(r[1]), persona:String(r[2]), turno:String(r[3]),
+    horas:Number(r[4]) || 0, nota:String(r[5] || ''), actualizado:r[6] ? String(r[6]) : ''
+  })).filter(r => /^\\d{4}-\\d{2}-\\d{2}$/.test(r.fecha));
+  return json_({ok:true, data, count:data.length, sheet:SHEET_NAME, serverTime:new Date().toISOString()});
 }
 function doPost(e) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -30,7 +30,7 @@ function doPost(e) {
       if (lastRow > 1) {
         const rows = sh.getRange(2, 1, lastRow - 1, 7).getValues();
         for (let i = rows.length - 1; i >= 0; i--) {
-          if (String(rows[i][1] || '') === fecha) sh.deleteRow(i + 2);
+          if (normalizeDate_(rows[i][1]) === fecha) sh.deleteRow(i + 2);
         }
       }
       const now = new Date().toISOString();
@@ -62,6 +62,16 @@ function ensureSheets_(ss) {
   if (sh.getLastRow() === 0) sh.appendRow(['ID','Fecha','Persona','Turno','Horas','Nota','Actualizado']);
   let cfg = ss.getSheetByName(CONFIG_NAME);
   if (!cfg) { cfg = ss.insertSheet(CONFIG_NAME); cfg.appendRow(['Parámetro','Valor']); cfg.appendRow(['Meta mensual conjunta',80]); cfg.appendRow(['Deuda inicial conjunta',122]); }
+}
+function normalizeDate_(value) {
+  if (value instanceof Date && !isNaN(value.getTime())) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  const s = String(value == null ? '' : value).trim();
+  if (/^\\d{4}-\\d{2}-\\d{2}$/.test(s)) return s;
+  const m = s.match(/^(\\d{1,2})[\\/.-](\\d{1,2})[\\/.-](\\d{4})$/);
+  if (m) return m[3] + '-' + String(m[2]).padStart(2, '0') + '-' + String(m[1]).padStart(2, '0');
+  return '';
 }
 function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
