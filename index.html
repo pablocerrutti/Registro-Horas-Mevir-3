@@ -29,7 +29,8 @@
 const $=id=>document.getElementById(id);
 const people=['Pablo','Patricia'];
 const durations=d=>d===4?{Mañana:4.5,Tarde:3.5}:{Mañana:4,Tarde:3};
-let records=[], apiUrl='', weekStart=monday(new Date()), editing=null, busy=false;
+const DEFAULT_API_URL='https://script.google.com/macros/s/AKfycbyQTcYiD06pxsf2M9PkTc2mHMGXQhUTEYnTDOc-8jKTf7LmXS06o2TO7LgF1XlqjLnQKw/exec';
+let records=[], apiUrl=DEFAULT_API_URL, weekStart=monday(new Date()), editing=null, busy=false;
 function dateISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function parseDate(s){return new Date(s+'T12:00:00')}
 function monday(d){let x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-(x.getDay()+6)%7);return x}
@@ -71,8 +72,9 @@ $('historyMonth').value=dateISO(new Date()).slice(0,7);$('historyMonth').onchang
 $('settingsBtn').onclick=()=>{$('settingsPanel').classList.toggle('hidden')};$('cancelSettings').onclick=()=>$('settingsPanel').classList.add('hidden');
 async function loadRemote(){if(!apiUrl){setStatus(false,'Sin planilla conectada');return}try{setStatus(false,'Conectando con Google Sheets…');let res=await fetch(apiUrl+'?action=list&v='+Date.now());let data=await res.json();if(!data.ok)throw Error(data.error||'No se pudo leer la planilla');records=(data.data||[]).map(r=>({...r,horas:Number(r.horas)||0}));setStatus(true,'Conectado · Google Sheets sincronizado');$('setupNotice').classList.add('hidden');render()}catch(e){setStatus(false,'No se pudo conectar: '+e.message);$('setupNotice').classList.remove('hidden')}}
 async function persist(){if(!apiUrl){setStatus(false,'Sin planilla: los cambios no están guardados permanentemente');renderStats();renderHistory();return}try{busy=true;setStatus(false,'Guardando en Google Sheets…');let res=await fetch(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'save',data:records})});let data=await res.json();if(!data.ok)throw Error(data.error||'Error de guardado');setStatus(true,'Guardado en Google Sheets');}catch(e){setStatus(false,'Error al guardar. Revisá la conexión: '+e.message);alert('No pudimos confirmar el guardado en Google Sheets. No cierres esta pestaña hasta revisar la conexión.');}finally{busy=false;renderWeek()}}
+$('apiUrl').value=DEFAULT_API_URL;
 $('connectBtn').onclick=async()=>{let url=$('apiUrl').value.trim();if(!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(url)){ $('connectMsg').textContent='Pegá la URL completa de la aplicación web que termina en /exec.';return}apiUrl=url;records=[];$('connectMsg').textContent='Probando conexión…';try{let r=await fetch(apiUrl+'?action=ping&v='+Date.now());let j=await r.json();if(!j.ok)throw Error('Respuesta no válida');$('connectMsg').textContent='Conexión correcta. Cargando registros…';await loadRemote();$('settingsPanel').classList.add('hidden')}catch(e){apiUrl='';$('connectMsg').textContent='No se pudo conectar: '+e.message+'. Verificá que la implementación esté habilitada para cualquier persona.';setStatus(false,'Planilla no conectada')}};
-clearForm();render();setStatus(false,'Sin planilla conectada');
+clearForm();render();setStatus(false,'Conectando con Google Sheets…');loadRemote();
 })();
 </script>
 </body></html>
