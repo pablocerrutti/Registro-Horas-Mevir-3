@@ -18,6 +18,31 @@ function doPost(e) {
   let body = {};
   try { body = JSON.parse(e.postData.contents || '{}'); } catch (_) { return json_({ok:false,error:'JSON inválido'}); }
   const sh = ss.getSheetByName(SHEET_NAME);
+  if (body.action === 'saveDay') {
+    const fecha = String(body.fecha || '');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return json_({ok:false,error:'Fecha de jornada inválida'});
+    const entries = Array.isArray(body.data) ? body.data : [];
+    if (entries.some(x => String(x.fecha || '') !== fecha)) return json_({ok:false,error:'Hay registros que no pertenecen a esta jornada'});
+    const lock = LockService.getScriptLock();
+    lock.waitLock(20000);
+    try {
+      const lastRow = sh.getLastRow();
+      if (lastRow > 1) {
+        const rows = sh.getRange(2, 1, lastRow - 1, 7).getValues();
+        for (let i = rows.length - 1; i >= 0; i--) {
+          if (String(rows[i][1] || '') === fecha) sh.deleteRow(i + 2);
+        }
+      }
+      const now = new Date().toISOString();
+      if (entries.length) sh.getRange(sh.getLastRow() + 1, 1, entries.length, 7).setValues(entries.map(x => [
+        String(x.id || Utilities.getUuid()), fecha, String(x.persona || ''),
+        String(x.turno || ''), Number(x.horas) || 0, String(x.nota || ''), now
+      ]));
+      return json_({ok:true, fecha:fecha, count:entries.length, updated:now});
+    } finally {
+      lock.releaseLock();
+    }
+  }
   if (body.action === 'save') {
     const entries = Array.isArray(body.data) ? body.data : [];
     sh.clearContents();
